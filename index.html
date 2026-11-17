@@ -1,1 +1,193 @@
-Commit changes... vi
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090914">
+<title>RK Photo Video Editor</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090914;color:white;font-family:Arial,sans-serif}
+header{padding:22px 18px;background:linear-gradient(120deg,#24104b,#111a38);border-bottom:1px solid #38305d}
+.logo{font-size:25px;font-weight:bold}
+.logo span{color:#a77bff}
+header p{color:#c6c0dc;font-size:13px}
+main{padding:17px;max-width:650px;margin:auto}
+h2{font-size:19px}
+.tabs{display:flex;gap:10px;margin:20px 0}
+button,.upload{border:0;border-radius:12px;padding:13px;background:#211c39;color:white;font-weight:bold;font-size:14px;cursor:pointer}
+button.active,.primary{background:linear-gradient(110deg,#783cff,#267cff)}
+button:active{opacity:.7}
+.panel{background:#141425;border:1px solid #30294a;border-radius:17px;padding:16px;margin-bottom:16px}
+.preview{width:100%;min-height:210px;max-height:390px;display:flex;align-items:center;justify-content:center;background:#080811;border-radius:12px;overflow:hidden}
+canvas{max-width:100%;max-height:370px;object-fit:contain}
+video{max-width:100%;max-height:370px}
+.placeholder{color:#89859e;text-align:center;padding:30px}
+input[type=file]{display:none}
+.upload{display:block;text-align:center;margin-top:13px;background:#282044}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+label{display:block;color:#d4cde9;margin:17px 0 7px;font-size:14px}
+input[type=range]{width:100%;accent-color:#9b66ff}
+.small{font-size:12px;color:#aaa4bd}
+footer{text-align:center;color:#817b99;padding:20px;font-size:12px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">RK <span>Photo Video Editor</span></div>
+ <p>✨ Create Beautiful Memories • আপনার সৃজনশীলতার নতুন ঠিকানা</p>
+</header>
+
+<main>
+ <div class="tabs">
+  <button class="active" id="photoTab" onclick="showTab('photo')">📷 Photo Editor</button>
+  <button id="videoTab" onclick="showTab('video')">🎬 Video Editor</button>
+ </div>
+
+ <section id="photoSection" class="panel">
+  <h2>📸 Photo Studio</h2>
+  <div class="preview">
+   <div class="placeholder" id="photoPlaceholder">আপনার ছবি এখানে দেখাবে</div>
+   <canvas id="photoCanvas" class="hidden"></canvas>
+  </div>
+  <label class="upload" for="photoInput">＋ ছবি নির্বাচন করুন</label>
+  <input id="photoInput" type="file" accept="image/*">
+
+  <label>☀️ Brightness</label>
+  <input id="brightness" type="range" min="0" max="200" value="100">
+
+  <label>◐ Contrast</label>
+  <input id="contrast" type="range" min="0" max="200" value="100">
+
+  <label>🎨 Saturation</label>
+  <input id="saturation" type="range" min="0" max="200" value="100">
+
+  <label>🌫️ Blur</label>
+  <input id="blur" type="range" min="0" max="10" value="0">
+
+  <div class="actions">
+   <button onclick="rotatePhoto()">↻ Rotate</button>
+   <button onclick="resetPhoto()">Reset</button>
+   <button class="primary" onclick="downloadPhoto()">⬇ Save Photo</button>
+   <button onclick="document.getElementById('photoInput').click()">Change Photo</button>
+  </div>
+ </section>
+
+ <section id="videoSection" class="panel hidden">
+  <h2>🎬 Video Studio</h2>
+  <div class="preview">
+   <div class="placeholder" id="videoPlaceholder">আপনার ভিডিও এখানে দেখাবে</div>
+   <video id="videoPlayer" class="hidden" controls playsinline></video>
+  </div>
+  <label class="upload" for="videoInput">＋ ভিডিও নির্বাচন করুন</label>
+  <input id="videoInput" type="file" accept="video/*">
+
+  <label>☀️ Brightness</label>
+  <input id="vBrightness" type="range" min="0" max="200" value="100">
+
+  <label>◐ Contrast</label>
+  <input id="vContrast" type="range" min="0" max="200" value="100">
+
+  <label>🎨 Saturation</label>
+  <input id="vSaturation" type="range" min="0" max="200" value="100">
+
+  <button style="width:100%;margin-top:18px" onclick="resetVideo()">Reset Video Effects</button>
+  <p class="small">ভিডিও নির্বাচন করে প্রিভিউ ও ইফেক্ট পরীক্ষা করুন। ভিডিও ফাইল এক্সপোর্ট এই প্রথম সংস্করণে নেই।</p>
+ </section>
+
+ <section class="panel">
+  <h2>💜 About RK Editor</h2>
+  <p class="small">আপনার ছবি ও ভিডিওকে দিন নতুন রূপ। সহজ এডিটিং, সুন্দর ডিজাইন এবং মোবাইল-ফ্রেন্ডলি অভিজ্ঞতা।</p>
+  <p>🌐 বাংলা | English</p>
+ </section>
+</main>
+<footer>Made with ❤️ by RK ISTIYAK</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let image=new Image(),rotation=0,photoReady=false;
+
+function showTab(tab){
+ $('photoSection').classList.toggle('hidden',tab!=='photo');
+ $('videoSection').classList.toggle('hidden',tab!=='video');
+ $('photoTab').classList.toggle('active',tab==='photo');
+ $('videoTab').classList.toggle('active',tab==='video');
+}
+
+$('photoInput').addEventListener('change',e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ const url=URL.createObjectURL(file);
+ image.onload=()=>{
+  photoReady=true;
+  rotation=0;
+  $('photoPlaceholder').classList.add('hidden');
+  $('photoCanvas').classList.remove('hidden');
+  drawPhoto();
+ };
+ image.src=url;
+});
+
+function drawPhoto(){
+ if(!photoReady)return;
+ const c=$('photoCanvas'),ctx=c.getContext('2d');
+ const sideways=Math.abs(rotation)%180===90;
+ c.width=sideways?image.height:image.width;
+ c.height=sideways?image.width:image.height;
+ ctx.save();
+ ctx.translate(c.width/2,c.height/2);
+ ctx.rotate(rotation*Math.PI/180);
+ ctx.filter=`brightness(${$('brightness').value}%) contrast(${$('contrast').value}%) saturate(${$('saturation').value}%) blur(${$('blur').value}px)`;
+ ctx.drawImage(image,-image.width/2,-image.height/2);
+ ctx.restore();
+}
+['brightness','contrast','saturation','blur'].forEach(id=>{
+ $(id).addEventListener('input',drawPhoto);
+});
+
+function rotatePhoto(){
+ rotation=(rotation+90)%360;
+ drawPhoto();
+}
+function resetPhoto(){
+ ['brightness','contrast','saturation'].forEach(id=>$(id).value=100);
+ $('blur').value=0;
+ rotation=0;
+ drawPhoto();
+}
+function downloadPhoto(){
+ if(!photoReady){alert('প্রথমে একটি ছবি নির্বাচন করুন');return;}
+ const a=document.createElement('a');
+ a.download='RK-Edited-Photo.png';
+ a.href=$('photoCanvas').toDataURL('image/png');
+ a.click();
+}
+
+let videoUrl=null;
+$('videoInput').addEventListener('change',e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ if(videoUrl)URL.revokeObjectURL(videoUrl);
+ videoUrl=URL.createObjectURL(file);
+ $('videoPlayer').src=videoUrl;
+ $('videoPlayer').classList.remove('hidden');
+ $('videoPlaceholder').classList.add('hidden');
+ applyVideo();
+});
+function applyVideo(){
+ $('videoPlayer').style.filter=
+ `brightness(${$('vBrightness').value}%) contrast(${$('vContrast').value}%) saturate(${$('vSaturation').value}%)`;
+}
+['vBrightness','vContrast','vSaturation'].forEach(id=>{
+ $(id).addEventListener('input',applyVideo);
+});
+function resetVideo(){
+ ['vBrightness','vContrast','vSaturation'].forEach(id=>$(id).value=100);
+ applyVideo();
+}
+</script>
+</body>
+  </html>
+    
